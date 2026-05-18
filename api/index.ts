@@ -2,11 +2,9 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 
-// @ts-ignore — produced by `vite build --ssr` before this function is bundled
+// @ts-ignore
 import { render } from "../dist/server/entry-server.js";
 
-// Template lives in dist/server/ (NOT dist/client/) so Vercel's static
-// filesystem layer can't intercept the request before our rewrite fires.
 const TEMPLATE = fs.readFileSync(
   path.join(process.cwd(), "dist/server/index.html"),
   "utf-8"
@@ -36,15 +34,13 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     res.statusCode = result.status;
     res.setHeader("content-type", "text/html; charset=utf-8");
     res.setHeader("vary", "user-agent");
-    res.setHeader(
-      "cache-control",
-      "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
-    );
+    res.setHeader("cache-control", "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400");
     res.end(html);
   } catch (err) {
     console.error("SSR error", err);
+    const msg = err instanceof Error ? (err.stack || err.message) : String(err);
     res.statusCode = 500;
     res.setHeader("content-type", "text/html; charset=utf-8");
-    res.end("<!doctype html><html><body><h1>Server error</h1></body></html>");
+    res.end(`<!doctype html><html><body><h1>SSR error</h1><pre style="white-space:pre-wrap;color:#c00">${msg.replace(/</g, '&lt;')}</pre></body></html>`);
   }
 }
