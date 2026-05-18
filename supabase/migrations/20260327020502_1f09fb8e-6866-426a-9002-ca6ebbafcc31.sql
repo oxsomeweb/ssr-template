@@ -1,0 +1,1 @@
+UPDATE services SET description = 'The ultimate head-to-toe detail — interior deep clean, exterior polish, ceramic sealant, and tire dressing for a showroom-worthy finish.' WHERE id = '8eb60fa4-658d-4ab2-a5d5-c964babf3a71';

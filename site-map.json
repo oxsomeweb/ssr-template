@@ -1,0 +1,343 @@
+{
+  "site": {
+    "name": "Drippy Suds Mobile Detailing",
+    "production_url": "https://drippysuds.com"
+  },
+  "data_files": {
+    "cities": {
+      "path": "src/data/cityPages.ts",
+      "export": "cityPages",
+      "url_pattern": "/mobile-detailing-:slug",
+      "anchor": "AI_CITY_ANCHOR",
+      "anchor_kind": "ts_comment",
+      "container_kind": "array",
+      "slug_format": {
+        "pattern": "kebab-case-lowercase",
+        "suffix": null,
+        "max_length": 60,
+        "example": "elk-grove",
+        "regex": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      },
+      "required_fields": [
+        "slug",
+        "cityName",
+        "seoTitle",
+        "seoDescription",
+        "heroTitle",
+        "introParagraphs",
+        "faqs"
+      ],
+      "optional_fields": [
+        "relatedLinks"
+      ],
+      "field_constraints": {
+        "seoTitle": { "max_chars": 65 },
+        "seoDescription": { "max_chars": 160 },
+        "heroTitle": { "max_chars": 80 },
+        "slug": { "regex": "^[a-z0-9]+(-[a-z0-9]+)*$", "unique_within_file": true },
+        "introParagraphs": { "min_items": 1, "max_items": 4, "item_type": "string" },
+        "faqs": {
+          "min_items": 3,
+          "item_type": "FaqItem",
+          "item_fields": ["question", "answer"],
+          "note": "Every FaqItem must use question/answer — not q/a or any other naming"
+        },
+        "relatedLinks": {
+          "item_fields": ["href", "text"],
+          "note": "hrefs must match url_pattern format for existing entries — never invent URLs"
+        }
+      },
+      "entry_template": {
+        "slug": "string — e.g. 'granite-bay'",
+        "cityName": "string — e.g. 'Granite Bay'",
+        "seoTitle": "string — e.g. 'Mobile Car Detailing in Granite Bay | Drippy Suds' (max 65 chars)",
+        "seoDescription": "string — e.g. 'Professional mobile car detailing in Granite Bay, CA. Ceramic coatings, interior deep cleaning, and exterior restoration. We come to you.' (max 160 chars)",
+        "heroTitle": "string — e.g. 'Premium Mobile Detailing in Granite Bay' (max 80 chars)",
+        "introParagraphs": "array of 1–4 strings — each a paragraph of intro/SEO body copy specific to this city",
+        "faqs": "array of 3+ objects — each { question: string, answer: string }",
+        "relatedLinks": "optional array — each item { href: string, text: string } linking to related pages on this site; hrefs must match existing entries in url_pattern format (e.g. '/services/interior-detail', '/mobile-detailing-roseville', '/services')"
+      }
+    },
+    "services": {
+      "path": "src/data/servicePages.ts",
+      "export": "servicePages",
+      "url_pattern": "/services/:slug",
+      "anchor": "AI_SERVICE_ANCHOR",
+      "anchor_kind": "ts_comment",
+      "container_kind": "array",
+      "slug_format": {
+        "pattern": "kebab-case-lowercase",
+        "suffix": null,
+        "max_length": 60,
+        "example": "interior-detail",
+        "regex": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      },
+      "required_fields": [
+        "slug",
+        "category",
+        "seoTitle",
+        "seoDescription",
+        "canonical",
+        "heroTitle",
+        "breadcrumbLabel",
+        "introParagraphs",
+        "sections",
+        "faqs",
+        "ctaText"
+      ],
+      "optional_fields": [
+        "relatedLinks"
+      ],
+      "field_constraints": {
+        "seoTitle": { "max_chars": 65 },
+        "seoDescription": { "max_chars": 160 },
+        "heroTitle": { "max_chars": 80 },
+        "breadcrumbLabel": { "max_chars": 40 },
+        "slug": { "regex": "^[a-z0-9]+(-[a-z0-9]+)*$", "unique_within_file": true },
+        "canonical": { "note": "Must equal 'https://drippysuds.com/services/' + slug" },
+        "introParagraphs": { "min_items": 1, "max_items": 3, "item_type": "string" },
+        "sections": {
+          "min_items": 1,
+          "max_items": 8,
+          "item_type": "ServicePageSection",
+          "item_fields": ["heading", "content"]
+        },
+        "faqs": {
+          "min_items": 3,
+          "item_type": "FaqItem",
+          "item_fields": ["question", "answer"],
+          "note": "Every FaqItem must use question/answer — not q/a or any other naming"
+        },
+        "relatedLinks": {
+          "item_fields": ["href", "text"],
+          "note": "hrefs must match url_pattern format for existing entries — never invent URLs"
+        }
+      },
+      "entry_template": {
+        "slug": "string — e.g. 'paint-correction'",
+        "category": "string — e.g. 'Paint Correction'",
+        "seoTitle": "string — e.g. 'Paint Correction Sacramento | Drippy Suds' (max 65 chars)",
+        "seoDescription": "string — e.g. 'Mobile paint correction in Sacramento. Multi-stage compound and polish to remove swirls, scratches, and oxidation.' (max 160 chars)",
+        "canonical": "string — must equal 'https://drippysuds.com/services/' + slug, e.g. 'https://drippysuds.com/services/paint-correction'",
+        "heroTitle": "string — e.g. 'Paint Correction' (max 80 chars)",
+        "breadcrumbLabel": "string — short label shown in breadcrumb, e.g. 'Paint Correction' (max 40 chars)",
+        "introParagraphs": "array of 1–3 strings — each a paragraph of intro/SEO body copy",
+        "sections": "array of 1–8 objects — each { heading: string, content: string }; content may use \\n\\n for paragraph breaks",
+        "faqs": "array of 3+ objects — each { question: string, answer: string }",
+        "ctaText": "string — short closing CTA sentence, e.g. 'Book paint correction and we\\'ll come to you.'",
+        "relatedLinks": "optional array — each item { href: string, text: string } linking to related pages on this site; hrefs must match existing entries (e.g. '/mobile-detailing-sacramento', '/services', '/services/ceramic-coatings')"
+      }
+    },
+    "blog": {
+      "path": "src/data/blogPosts.ts",
+      "export": "blogPosts",
+      "url_pattern": "/blog/:slug",
+      "anchor": "AI_BLOG_ANCHOR",
+      "anchor_kind": "ts_comment",
+      "container_kind": "array",
+      "slug_format": {
+        "pattern": "kebab-case-lowercase",
+        "suffix": null,
+        "max_length": 80,
+        "example": "ceramic-coating-vs-wax",
+        "regex": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      },
+      "required_fields": [
+        "slug",
+        "title",
+        "date",
+        "category",
+        "excerpt",
+        "image",
+        "content"
+      ],
+      "optional_fields": [],
+      "field_constraints": {
+        "title": { "max_chars": 80 },
+        "excerpt": { "max_chars": 200 },
+        "date": { "note": "ISO 8601 date string, e.g. '2025-01-15'" },
+        "slug": { "regex": "^[a-z0-9]+(-[a-z0-9]+)*$", "unique_within_file": true },
+        "image": { "note": "Must be a full URL (https://...) — typically a Supabase site-images URL or GALLERY constant value" }
+      },
+      "entry_template": {
+        "slug": "string — e.g. 'ceramic-coating-vs-wax'",
+        "title": "string — e.g. 'Ceramic Coating vs Wax: What Sacramento Drivers Should Choose' (max 80 chars)",
+        "date": "string — ISO 8601 date, e.g. '2025-01-15'",
+        "category": "string — e.g. 'Ceramic Coatings'",
+        "excerpt": "string — e.g. 'A practical comparison of ceramic coatings and traditional wax for Sacramento weather and driving conditions.' (max 200 chars)",
+        "image": "string — full URL to the featured image (Supabase site-images bucket or GALLERY constant value)",
+        "content": "string — long-form article body in markdown or HTML"
+      }
+    }
+  },
+  "static_pages": {
+    "home": { "path": "src/pages/Index.tsx", "url": "/" },
+    "services": { "path": "src/pages/Services.tsx", "url": "/services" },
+    "gallery": { "path": "src/pages/Gallery.tsx", "url": "/gallery" },
+    "contact": { "path": "src/pages/Contact.tsx", "url": "/contact" },
+    "appointments": { "path": "src/pages/Appointments.tsx", "url": "/s/appointments" },
+    "shop": { "path": "src/pages/Shop.tsx", "url": "/s/shop" },
+    "ai_detailing": { "path": "src/pages/AIDetailingTool.tsx", "url": "/ai-detailing" },
+    "blog_listing": { "path": "src/pages/BlogListing.tsx", "url": "/blog" }
+  },
+  "routes": {
+    "static": [
+      { "path": "/", "component": "Index" },
+      { "path": "/services", "component": "Services" },
+      { "path": "/gallery", "component": "Gallery" },
+      { "path": "/contact", "component": "Contact" },
+      { "path": "/s/appointments", "component": "Appointments" },
+      { "path": "/s/shop", "component": "Shop" },
+      { "path": "/ai-detailing", "component": "AIDetailingTool" },
+      { "path": "/blog", "component": "BlogListing" }
+    ],
+    "dynamic": [
+      {
+        "path": "/blog/:slug",
+        "component": "BlogDetail",
+        "data_file": "src/data/blogPosts.ts",
+        "param": "slug",
+        "note": "BlogDetail also falls back to the Supabase seo_blog_drafts table when no static blogPosts entry matches the slug."
+      },
+      {
+        "path": "/area/:citySlug",
+        "component": "DynamicCityPage",
+        "data_file": null,
+        "param": "citySlug",
+        "note": "Runtime-only Supabase-backed city pages (seo_city_pages table). Separate from the prerendered /mobile-detailing-:slug landing routes — agents should add new cities to src/data/cityPages.ts, not here."
+      },
+      {
+        "path": "/services/:serviceSlug",
+        "component": "DynamicServicePage",
+        "data_file": "src/data/servicePages.ts",
+        "param": "serviceSlug",
+        "note": "Renders the entry from src/data/servicePages.ts whose slug equals serviceSlug. Also reads optional CMS overrides from the Supabase seo_service_pages table at runtime, but the static data file is authoritative for prerender and structure."
+      },
+      {
+        "path": "/mobile-detailing-:slug",
+        "component": "CityLanding",
+        "data_file": "src/data/cityPages.ts",
+        "param": "slug",
+        "note": "NOT a single React Router :slug param. Each city has its own static <Route path=\"/mobile-detailing-{slug}\"> entry in src/App.tsx. CityLanding parses location.pathname.replace('/mobile-detailing-', '') and looks the slug up in cityPages. Adding a new city requires BOTH inserting an entry above AI_CITY_ANCHOR in src/data/cityPages.ts AND inserting a new <Route path=\"/mobile-detailing-{slug}\" element={<CityLanding />} /> above {/* AI_ROUTE_ANCHOR */} in src/App.tsx."
+      },
+      {
+        "path": "*",
+        "component": "NotFound",
+        "data_file": null,
+        "param": null,
+        "note": "Catch-all. Must remain the last route in src/App.tsx."
+      }
+    ]
+  },
+  "new_page_config": {
+    "template_path": "src/pages/_ai_page_template.tsx",
+    "router_anchor_file": "src/App.tsx",
+    "router_anchor": "AI_ROUTE_ANCHOR"
+  },
+  "editable_regions": {
+    "src/components/home/HeroSection.tsx": [
+      {
+        "anchor_start": "AI_START_HERO_EYEBROW",
+        "anchor_end": "AI_END_HERO_EYEBROW",
+        "content_type": "headline",
+        "max_chars": 40,
+        "description": "Small uppercase eyebrow label above the hero H1 (e.g. 'Premium Mobile Detailing')."
+      },
+      {
+        "anchor_start": "AI_START_HERO_HEADLINE",
+        "anchor_end": "AI_END_HERO_HEADLINE",
+        "content_type": "headline",
+        "max_chars": 80,
+        "description": "Main hero H1. Preserve the <h1>, <br>, and <span class=\"text-primary\"> structure exactly — only edit the visible text."
+      },
+      {
+        "anchor_start": "AI_START_HERO_SUBTITLE",
+        "anchor_end": "AI_END_HERO_SUBTITLE",
+        "content_type": "paragraph",
+        "max_chars": 200,
+        "description": "Hero supporting paragraph immediately under the H1."
+      }
+    ],
+    "src/components/home/AboutSection.tsx": [
+      {
+        "anchor_start": "AI_START_ABOUT_HEADLINE",
+        "anchor_end": "AI_END_ABOUT_HEADLINE",
+        "content_type": "headline",
+        "max_chars": 80,
+        "description": "About section H2 headline."
+      },
+      {
+        "anchor_start": "AI_START_ABOUT_BODY",
+        "anchor_end": "AI_END_ABOUT_BODY",
+        "content_type": "paragraph",
+        "max_chars": 1200,
+        "description": "About section body — three <p> tags inside a <div class=\"space-y-4 ...\">. Preserve the wrapping div and three-paragraph structure."
+      }
+    ],
+    "src/components/home/WhyChooseSection.tsx": [
+      {
+        "anchor_start": "AI_START_WHY_EYEBROW",
+        "anchor_end": "AI_END_WHY_EYEBROW",
+        "content_type": "headline",
+        "max_chars": 40,
+        "description": "Eyebrow label above the 'Why Choose Drippy Suds' H2."
+      },
+      {
+        "anchor_start": "AI_START_WHY_HEADLINE",
+        "anchor_end": "AI_END_WHY_HEADLINE",
+        "content_type": "headline",
+        "max_chars": 60,
+        "description": "Why Choose section H2 — preserve the <h2> wrapper and inline style; only change visible text."
+      }
+    ]
+  },
+  "prerender_registration": {
+    "file": "vite-plugin-prerender.ts",
+    "method": "direct_import",
+    "imports": {
+      "services": "servicePages from ./src/data/servicePages",
+      "cities": "cityPages from ./src/data/cityPages",
+      "blog": "blogPosts from ./src/data/blogPosts"
+    },
+    "note": "Plugin imports arrays directly — adding an entry to any data file automatically registers it for prerendering on the next build. No separate slug registration step is required. NOTE: Adding a new city ALSO requires inserting a matching <Route> in src/App.tsx above {/* AI_ROUTE_ANCHOR */} so React Router will mount CityLanding for the new path."
+  },
+  "capabilities": {
+    "static_page_enrichment": true,
+    "city_expansion": true,
+    "service_pages": true,
+    "blog_posts": true,
+    "faq_rendering": true,
+    "faq_schema": true
+  },
+  "faq_schema_config": {
+    "component": "src/components/SEO.tsx",
+    "prop": "jsonLd",
+    "triggers": "faqs.length > 0",
+    "schema_type": "FAQPage",
+    "format": {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "<faq.question>",
+          "acceptedAnswer": { "@type": "Answer", "text": "<faq.answer>" }
+        }
+      ]
+    },
+    "note": "Inject FAQPage schema ALONGSIDE base LocalBusiness — never replace it. CityLanding and DynamicServicePage build a @graph array containing LocalBusiness, BreadcrumbList, and FAQPage and pass it through the SEO component's jsonLd prop. The prerender plugin (vite-plugin-prerender.ts) must also emit FAQPage JSON-LD inline in the static HTML for every prerendered page that has faqs — verify this is preserved when editing the plugin."
+  },
+  "constants": {
+    "SITE_URL": "https://drippysuds.com",
+    "PHONE": "(916) 539-2062",
+    "PHONE_LINK": "tel:+19165392062",
+    "COMPANY_NAME": "Drippy Suds Mobile Detailing",
+    "BUSINESS_EMAIL": "drippysudsllc@gmail.com",
+    "BUSINESS_ADDRESS": "2101 53rd Ave, Sacramento, CA 95822",
+    "IMG_BASE": "https://romwqrkybfkaoklrauuk.supabase.co/storage/v1/object/public/site-images",
+    "OG_IMAGE": "https://dmddvgpvmpiorrpslbdd.supabase.co/storage/v1/object/public/scraped-images/drippysuds.com/0dripsuds1_1765559919.png",
+    "GALLERY_IMPORT": "Import all gallery image URLs from src/lib/images.ts via `import { GALLERY } from \"@/lib/images\";` — never hardcode Supabase URLs in components or data entries."
+  },
+  "build_command": "npm run build",
+  "tsc_command": "npx tsc --noEmit",
+  "validate_command": "node scripts/validate-structure.js"
+}

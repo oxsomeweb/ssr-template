@@ -1,0 +1,251 @@
+name: Claude SEO Review
+
+# Runs on every PR open and every new commit to a PR. Reads the §1/§2/§3
+# review checklist from .claude/seo-review.md and the path allowlist from
+# .claude/scope.md. Posts review comments and pushes auto-fix commits for
+# defects in §3 (deterministic) but only comments for §1/§2 (judgment).
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      # Only run when SEO content actually changes. Skips CI/config-only
+      # PRs (like the setup PR adding this workflow) and unrelated
+      # cosmetic changes.
+      - 'src/data/**'
+      - 'src/pages/**'
+      - 'src/components/**'
+      - 'vite-plugin-prerender.ts'
+      - 'site-map.json'
+      - 'AGENT_GUIDE.md'
+      # Homepage snippet rewrites land here (SPA repos serve <title> /
+      # <meta description> from index.html). Without this entry the
+      # reviewer doesn't fire on homepage-only PRs and they can't
+      # auto-merge under branch protection that requires the review
+      # status check.
+      - 'index.html'
+
+permissions:
+  contents: write          # so Claude can push fix commits to the PR branch
+  pull-requests: write     # so Claude can comment + request changes
+  issues: write            # so Claude can post comments
+  id-token: write          # required by claude-code-action to exchange the
+                           # workflow's OIDC identity for a GitHub App token
+
+# Serialize reviews on the same PR but DO NOT cancel an in-progress
+# review when a new commit lands. Cancel-in-progress was killing
+# Claude's own review mid-stride: Claude pushes its `fix(seo):` commit,
+# that push fires synchronize, the new workflow run cancels the still-
+# running original — which then never reaches the §1/§2 comment-posting
+# step. With cancel-in-progress: false, the new run waits in queue
+# instead. The original finishes its full review + posts the structured
+# report, then the queued run starts, hits the gate, and skips in 7s.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  review:
+    # Loop prevention: skip if the PR was opened by claude[bot] OR the head
+    # commit was authored by claude[bot]. Prevents Claude from reacting to
+    # its own fix commits.
+    if: >-
+      github.event.pull_request.user.login != 'claude[bot]' &&
+      !startsWith(github.head_ref, 'site-build/') &&
+      !startsWith(github.head_ref, 'site-rebuild/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Skip if last commit was Claude's own fix
+        id: gate
+        env:
+          PR_EVENT_ACTION: ${{ github.event.action }}
+        run: |
+          AUTHOR=$(git log -1 --pretty=format:'%an')
+          MSG=$(git log -1 --pretty=format:'%s')
+          echo "Last commit author: $AUTHOR"
+          echo "Last commit message: $MSG"
+          echo "PR event action: $PR_EVENT_ACTION"
+          # Reopen-bypass: a human deliberately reopened the PR, which is
+          # the only documented way to retrigger a review after a Claude
+          # fix commit is the latest commit on the branch. Always run.
+          if [[ "$PR_EVENT_ACTION" == "reopened" ]]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "Bypassing skip gate — PR was reopened (human-initiated rerun)"
+          elif [[ "$AUTHOR" == "claude[bot]" ]] || [[ "$MSG" == fix\(seo\):* ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Skipping — last commit was Claude's auto-fix"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Install deps so Claude can run `npm run build` to verify §3 fixes.
+      - name: Set up Node
+        if: steps.gate.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        # Use `npm install` not `npm ci` because lockfile drift is common
+        # across the client repo fleet (Lovable's auto-edits often update
+        # package.json without regenerating the lock). `npm ci` aborts on
+        # drift; `npm install` regenerates the lockfile and continues, so
+        # Claude can still run the build.
+        #
+        # continue-on-error: a failed install (network blip, registry
+        # outage, postinstall script crash) should NOT block the review.
+        # Claude can still review the diff and report syntax issues
+        # without `npm run build` — the build verification just gets
+        # marked unavailable in the report.
+        if: steps.gate.outputs.skip != 'true'
+        id: install
+        continue-on-error: true
+        run: npm install --no-audit --no-fund --no-progress
+
+      # Workaround: anthropics/claude-code-action@v1's bundled Claude Code
+      # native installer (v2.1.129 as of 2026-05) reports success but does
+      # not actually write the binary to ~/.local/bin/claude — the SDK then
+      # crashes with "native binary not found". Pre-installing Claude Code
+      # via npm and passing the resolved path to the action sidesteps the
+      # broken native installer entirely. Drop this step + the
+      # path_to_claude_code_executable input once the action is fixed.
+      - name: Pre-install Claude Code (workaround for broken native installer)
+        if: steps.gate.outputs.skip != 'true'
+        id: claude-install
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          CLAUDE_PATH=$(which claude)
+          echo "path=$CLAUDE_PATH" >> "$GITHUB_OUTPUT"
+          echo "Claude Code installed at: $CLAUDE_PATH"
+          "$CLAUDE_PATH" --version
+
+      - name: Run Claude review
+        if: steps.gate.outputs.skip != 'true'
+        id: review
+        uses: anthropics/claude-code-action@v1
+        env:
+          # GEMINI_API_KEY — used by scripts/regenerate-image.js when the
+          #   reviewer fills a missing hero image (seo-review.md §3.3.b),
+          #   and by §1.10 pricing for grounded cost verification.
+          # SUPABASE_URL / SUPABASE_SERVICE_KEY — used by the reviewer to
+          #   look up the canonical `sites_id` from the `clients` table
+          #   for auto-fixing lead-capture script tags in index.html
+          #   (seo-review.md §3.7 item 8). DB is the source of truth.
+          # GH_TOKEN + PR_NUMBER — required so the reviewer can call
+          #   `gh pr merge $PR_NUMBER --auto` when §4 auto-merge gate
+          #   passes. Without these, the reviewer can post the report
+          #   but can't enable auto-merge.
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          path_to_claude_code_executable: ${{ steps.claude-install.outputs.path }}
+          claude_args: |
+            --allowedTools "Bash,Edit,Write,Read,Glob,Grep,Git"
+            --max-turns 200
+          prompt: |
+            Review this PR against the checklist in `.claude/seo-review.md`.
+
+            **Focus on the diff.** Run `git diff origin/main...HEAD` first
+            and review only what changed. Don't audit unchanged code.
+
+            **Order of operations:**
+
+            0. **Run §3.−1 first** — detect build type (initial site
+               build vs incremental SEO update). The detection gates
+               which rules apply and how the final report is tagged.
+               Do NOT skip — the rules below behave differently per
+               build type.
+
+            1. **Run §3.0 second** — cannibalization detection. If
+               found, drop the entry IMMEDIATELY before any other
+               work. The drop preempts a chain of later checks that
+               would otherwise rescue the cannibal page.
+
+            2. **Make ALL §3 + §1/§2 edits in one pass.** Run §3.1–3.6
+               checks, then apply §1/§2 auto-fixes (revert regressions
+               only on incremental updates, remove garbage, rewrite
+               over-length fields, strip banned phrases). Do NOT
+               commit after each individual fix.
+
+            3. **Run `npm run build`** to verify all fixes hold. If
+               `node_modules/` is missing (npm install failed earlier in
+               the workflow), skip the build and note "build verification
+               unavailable — npm install failed" in the report. Otherwise,
+               if the build fails, diagnose and patch in the same edit
+               pass, then re-build. Iterate until the build passes.
+
+            4. **COMMIT AND PUSH — required before the PR comment:**
+               If you made any edits in steps 1–3:
+               a. `git add -A`
+               b. `git commit -m "fix(seo): <one-line summary of all fixes>"`
+               c. `git push origin HEAD`
+               d. `git log origin/main..HEAD --oneline` — confirm your
+                  commit appears above the base. If push fails or the
+                  commit does not appear, post a short error comment
+                  explaining what blocked you instead of the full review.
+               Skip this gate ONLY if §3 was completely clean AND no
+               §1/§2 auto-fixes were needed (nothing to commit).
+
+            5. **Post the consolidated client-ready report** as a single
+               PR comment using the structured format in seo-review.md.
+               The "Build verification" section must reflect the build
+               result AFTER your fix commits were pushed — not a
+               local-only build that was never committed to the branch.
+
+            **Path allowlist** in `.claude/scope.md` — only edit files
+            matching those patterns. If a fix needs a file outside the
+            allowlist, mention it in the comment and stop.
+
+            Keep PR comments and commit messages in plain language a
+            non-engineer can act on.
+
+      # Failure fallback: if the Claude action errored before posting
+      # its own comment (bad API key, action version regression, OIDC
+      # token failure, runner OOM), post a diagnostic comment so the PR
+      # owner can see what broke instead of a silent red X. Without
+      # this, the review failing looks identical to the review never
+      # having run — which is exactly the failure mode we hit on
+      # konsker-electric#9.
+      - name: Report review failure to PR
+        if: failure() && steps.gate.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const installOutcome = '${{ steps.install.outcome }}' || 'not run';
+            const reviewOutcome = '${{ steps.review.outcome }}' || 'not run';
+            const body = [
+              '⚠️ **Claude SEO Review failed to complete.**',
+              '',
+              'The review workflow ran but the Claude action errored before posting its review comment.',
+              '',
+              `**Step outcomes:**`,
+              `- npm install: \`${installOutcome}\``,
+              `- Claude review action: \`${reviewOutcome}\``,
+              '',
+              '**Most common causes (in order):**',
+              '1. `ANTHROPIC_API_KEY` secret not set on this repo or at org level',
+              '2. `anthropics/claude-code-action@v1` version regression — pin to a specific SHA if recurring',
+              '3. OIDC token exchange failure (check `id-token: write` permission still present)',
+              '',
+              `**Run log:** ${runUrl}`,
+              '',
+              'Re-run the workflow after fixing the underlying issue, or close & reopen this PR to retrigger.',
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

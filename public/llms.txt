@@ -1,0 +1,51 @@
+# Drippy Suds Mobile Detailing
+> Mobile auto detailing serving the greater Sacramento, CA area — interior detail, exterior wash, the Drippy Diamond full-detail package, ceramic coatings, headlight restoration, and on-site mobile detailing. Call (916) 539-2062.
+
+## Pages
+- [Home](https://drippysuds.com/): Drippy Suds homepage covering the brand, the four core services, the service area across the greater Sacramento metro, and how to book a mobile detail appointment at your home, office, or apartment lot.
+
+- [Services](https://drippysuds.com/services): Overview of every detailing service Drippy Suds offers — interior detail, exterior wash, the Drippy Diamond Package, ceramic coatings, mobile auto detailing, and headlight restoration. Useful for comparing service tiers before booking.
+
+- [Mobile Auto Detailing](https://drippysuds.com/services/mobile-auto-detailing): Generic overview of Drippy Suds' mobile auto detailing service — what is included, how the at-your-location process works, and how to book an appointment in Sacramento or surrounding cities.
+
+- [Interior Detail](https://drippysuds.com/services/interior-detail): Mobile interior detailing — deep vacuum, pet hair extraction, leather cleaning and conditioning, vent cleaning, glass, and high-touch surface disinfection performed at the customer's home, office, or apartment lot.
+
+- [Exterior Wash](https://drippysuds.com/services/exterior-wash): Mobile two-bucket hand wash with paint-safe technique. Wheels, tires, glass, careful microfiber dry. Honest framing of why hand washing is safer than tunnel or touchless washes for Sacramento drivers.
+
+- [Drippy Diamond Package](https://drippysuds.com/services/drippy-diamond-package): The combined interior + exterior full detail in a single visit — priced below booking the two services separately. The right choice when both the cabin and the paint need attention.
+
+- [Ceramic Coatings](https://drippysuds.com/services/ceramic-coatings): Honest, jargon-free explanation of what ceramic coating actually does and does not do. Realistic 2–5 year durability ranges, prep work, and Sacramento-specific climate reasoning for the service.
+
+- [Headlight Restoration](https://drippysuds.com/services/headlight-restoration): Mobile UV-oxidized headlight restoration — wet sanding through progressive grits, machine polish, IPA prep, and ceramic or sealant topcoat. Performed on-site in under an hour.
+
+- [Mobile Detailing Sacramento](https://drippysuds.com/mobile-detailing-sacramento): City landing page for Sacramento — neighborhood references (Midtown, East Sac, Land Park, Natomas, Pocket, Arden-Arcade, downtown), valley climate framing, and booking for on-site detailing across the city.
+
+- [Mobile Detailing Elk Grove](https://drippysuds.com/mobile-detailing-elk-grove): City landing page for Elk Grove — family-oriented suburban customer profile, valley oak pollen, and booking for at-home detailing in the Elk Grove area.
+
+- [Mobile Detailing Rancho Cordova](https://drippysuds.com/mobile-detailing-rancho-cordova): City landing page for Rancho Cordova — agricultural-edge dust, freeway commuter grime, and fleet-vehicle detailing relevance for the Rancho Cordova service area.
+
+- [Mobile Detailing Natomas](https://drippysuds.com/mobile-detailing-natomas): City landing page for Natomas — flexible on-location detailing for the Natomas neighborhood of Sacramento, with valley-climate framing and booking details.
+
+- [Mobile Detailing Folsom](https://drippysuds.com/mobile-detailing-folsom): City landing page for Folsom — Folsom Lake corridor, shaded street parking, and tree-sap detailing relevance for Folsom drivers.
+
+- [Mobile Detailing Roseville](https://drippysuds.com/mobile-detailing-roseville): City landing page for Roseville — UV exposure for outdoor-parked vehicles and full mobile detail service across the Roseville area.
+
+- [Mobile Detailing Citrus Heights](https://drippysuds.com/mobile-detailing-citrus-heights): City landing page for Citrus Heights — light-rail rail-dust and tree-lined street parking, with on-site detailing across the Citrus Heights area.
+
+- [Mobile Detailing West Sacramento](https://drippysuds.com/mobile-detailing-west-sacramento): City landing page for West Sacramento — full mobile detailing menu delivered at your address in West Sacramento.
+
+- [Mobile Detailing Carmichael](https://drippysuds.com/mobile-detailing-carmichael): City landing page for Carmichael — interior detail, exterior wash, and ceramic coating service brought to Carmichael customers' driveways or workplaces.
+
+- [Mobile Detailing Fair Oaks](https://drippysuds.com/mobile-detailing-fair-oaks): City landing page for Fair Oaks — historic village, American River proximity, well-water mineral deposits, and equestrian/ranch property detailing context.
+
+- [Mobile Detailing Arden-Arcade](https://drippysuds.com/mobile-detailing-arden-arcade): City landing page for Arden-Arcade — Sacramento-adjacent neighborhoods served by the Drippy Suds mobile unit.
+
+- [Mobile Detailing North Highlands](https://drippysuds.com/mobile-detailing-north-highlands): City landing page for North Highlands — full mobile detailing service at the customer's home or workplace.
+
+- [Gallery](https://drippysuds.com/gallery): Photo gallery of before-and-after detailing work across Sacramento and surrounding cities — interior details, exterior washes, ceramic coatings, and full Drippy Diamond Package results.
+
+- [Contact](https://drippysuds.com/contact): Contact page with phone, email, and the Drippy Suds business address — the fastest way to reach Harvey to ask questions or confirm service availability for your location.
+
+- [Book Appointment](https://drippysuds.com/s/appointments): Online appointment booking — pick a service and a time slot for a mobile detail at your home, office, or apartment parking lot in the Sacramento metro.
+
+- [Blog](https://drippysuds.com/blog): Drippy Suds blog covering detailing topics, ceramic coating explainers, and Sacramento-specific paint care guidance for valley drivers.

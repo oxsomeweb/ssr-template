@@ -1,0 +1,220 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 195 100% 52%;
+    --primary-foreground: 0 0% 4%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 62%;
+    --accent: 195 100% 52%;
+    --accent-foreground: 0 0% 4%;
+    --destructive: 6 90% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 16%;
+    --input: 0 0% 14%;
+    --ring: 195 100% 52%;
+    --radius: 0.125rem;
+    --font-heading: 'Anton', 'Bebas Neue', Impact, sans-serif;
+    --font-display: 'Archivo Black', 'Anton', Impact, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 0 0% 92%;
+    --sidebar-primary: 195 100% 52%;
+    --sidebar-primary-foreground: 0 0% 4%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 92%;
+    --sidebar-border: 0 0% 16%;
+    --sidebar-ring: 195 100% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    background-color: hsl(var(--background));
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-body);
+    font-feature-settings: "ss01", "cv11";
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, hsl(195 100% 52% / 0.08), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 100% 100%, hsl(195 100% 52% / 0.04), transparent 60%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+
+  h1 { font-size: clamp(3rem, 8vw, 7rem); letter-spacing: -0.02em; }
+  h2 { font-size: clamp(2rem, 5vw, 4rem); }
+  h3 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
+
+  ::selection {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: hsl(var(--background)); }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border: 2px solid hsl(var(--background)); }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--primary)); }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-7 py-4
+           bg-primary text-primary-foreground font-display uppercase tracking-wider text-sm
+           border-2 border-primary
+           transition-all duration-150 ease-out
+           hover:bg-primary/90 hover:shadow-electric-lg
+           active:translate-y-px
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-7 py-4
+           bg-transparent text-foreground font-display uppercase tracking-wider text-sm
+           border-2 border-foreground/20
+           transition-all duration-150 ease-out
+           hover:border-primary hover:text-primary hover:shadow-electric
+           active:translate-y-px;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 font-display uppercase tracking-wider text-sm text-foreground
+           border-b-2 border-transparent pb-1
+           transition-colors duration-150
+           hover:border-primary hover:text-primary;
+  }
+
+  .section { @apply relative py-20 md:py-32; }
+  .section-dark { @apply relative py-20 md:py-32 bg-background; }
+  .section-card { @apply relative py-20 md:py-32 bg-card border-y border-border; }
+  .section-electric { @apply relative py-20 md:py-32 bg-primary text-primary-foreground; }
+
+  .heading-mega {
+    @apply font-display uppercase leading-[0.85] tracking-tightest;
+    font-size: clamp(3.5rem, 11vw, 10rem);
+  }
+
+  .heading-display {
+    @apply font-heading uppercase leading-[0.9] tracking-brand;
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+  }
+
+  .heading-section {
+    @apply font-heading uppercase leading-[0.9] tracking-brand;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 font-mono uppercase tracking-widest text-xs text-primary;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 1.5rem;
+    height: 1px;
+    background-color: hsl(var(--primary));
+    display: inline-block;
+  }
+
+  .nav-link {
+    @apply relative font-display uppercase tracking-wider text-sm text-foreground/80
+           transition-colors duration-150 hover:text-foreground;
+  }
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -6px;
+    height: 2px;
+    background-color: hsl(var(--primary));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s ease-out;
+  }
+  .nav-link:hover::after,
+  .nav-link.active::after { transform: scaleX(1); }
+
+  .detail-card {
+    @apply relative bg-card border border-border p-6
+           transition-all duration-200 ease-out
+           hover:border-primary hover:-translate-y-0.5;
+  }
+
+  .stat-block {
+    @apply border-l-2 border-primary pl-5 py-2;
+  }
+}
+
+@layer utilities {
+  .text-electric {
+    color: hsl(var(--primary));
+    text-shadow: 0 0 24px hsl(var(--primary) / 0.4);
+  }
+
+  .text-gradient-electric {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(190 100% 60%), hsl(200 100% 55%), hsl(180 100% 60%));
+  }
+
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(190 100% 60%), hsl(200 100% 55%), hsl(180 100% 60%));
+  }
+
+  .text-stroke {
+    -webkit-text-stroke: 1.5px hsl(var(--foreground));
+    color: transparent;
+  }
+
+  .text-stroke-electric {
+    -webkit-text-stroke: 1.5px hsl(var(--primary));
+    color: transparent;
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.5) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .bg-grid-fade {
+    -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+            mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  }
+
+  .divider-electric {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary)), transparent);
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 32s linear infinite;
+  }
+}

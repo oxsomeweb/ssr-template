@@ -1,0 +1,7 @@
+project_id = "romwqrkybfkaoklrauuk"
+
+[functions.agent-receiver]
+verify_jwt = false
+
+[functions.llms-txt]
+verify_jwt = false
