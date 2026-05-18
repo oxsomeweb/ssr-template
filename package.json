@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && vite build --ssr src/entry-server.tsx --outDir dist/server",
+    "build": "vite build && vite build --ssr src/entry-server.tsx --outDir dist/server && node -e \"require('fs').renameSync('dist/client/index.html','dist/server/index.html')\"",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
