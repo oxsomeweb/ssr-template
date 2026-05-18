@@ -2,9 +2,10 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Browser API shims for Node SSR. Supabase + next-themes + other client-side
-// libs touch localStorage at module-init time; we stub it with a no-op store.
-// Stubs return safe defaults so library checks pass without trying real persistence.
+// Install browser-API shims BEFORE any SSR bundle code runs. Supabase, next-themes,
+// and similar libs touch localStorage at module-init time and crash in Node SSR
+// without these stubs. We use a dynamic import for the SSR bundle below to
+// guarantee these shims are set up before its module-init code executes.
 (() => {
   const g = globalThis as any;
   if (typeof g.localStorage === 'undefined') {
@@ -21,9 +22,6 @@ import path from 'node:path';
   }
 })();
 
-// @ts-ignore — produced by \`vite build --ssr\` before this function is bundled
-import { render } from '../dist/server/entry-server.js';
-
 const TEMPLATE = fs.readFileSync(
   path.join(process.cwd(), 'dist/server/index.html'),
   'utf-8'
@@ -37,11 +35,27 @@ function stripHydrationScripts(html: string): string {
     .replace(/<link\s+rel="modulepreload"[^>]*href="\/assets\/[^"]+\.js"[^>]*\/?>/g, '');
 }
 
+let cachedRender: ((url: string) => { html: string; head: string; status: number }) | null = null;
+let loadPromise: Promise<typeof cachedRender> | null = null;
+async function getRender() {
+  if (cachedRender) return cachedRender;
+  if (!loadPromise) {
+    // @ts-ignore — built by vite SSR
+    loadPromise = import('../dist/server/entry-server.js').then((m: any) => {
+      cachedRender = m.render;
+      return cachedRender;
+    });
+  }
+  return loadPromise;
+}
+
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   const url = req.url || '/';
   const ua = (req.headers['user-agent'] || '') as string;
   const isBot = BOT_RE.test(ua);
   try {
+    const render = await getRender();
+    if (!render) throw new Error('SSR bundle loaded but render export missing');
     const result = render(url);
     let html = TEMPLATE.replace('<!--app-head-->', result.head).replace(
       '<!--app-html-->',
