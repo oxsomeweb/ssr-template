@@ -1,46 +1,55 @@
-import type { IncomingMessage, ServerResponse } from "node:http";
-import fs from "node:fs";
-import path from "node:path";
-
-// @ts-ignore
-import { render } from "../dist/server/entry-server.js";
-
-const TEMPLATE = fs.readFileSync(
-  path.join(process.cwd(), "dist/server/index.html"),
-  "utf-8"
-);
-
-const BOT_RE = /bot|crawler|spider|googlebot|bingbot|yandex|baidu|duckduck|slurp|facebookexternalhit|twitterbot|linkedinbot|whatsapp|telegrambot|applebot|petalbot|semrushbot|ahrefsbot/i;
-
-function stripHydrationScripts(html: string): string {
-  return html
-    .replace(/<script\s+type="module"[^>]*src="\/assets\/[^"]+\.js"[^>]*><\/script>/g, "")
-    .replace(/<link\s+rel="modulepreload"[^>]*href="\/assets\/[^"]+\.js"[^>]*\/?>/g, "");
-}
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
-  const url = req.url || "/";
-  const ua = (req.headers["user-agent"] || "") as string;
-  const isBot = BOT_RE.test(ua);
-
+  const url = req.url || '/';
+  const steps: string[] = [];
   try {
-    const result = render(url);
-    let html = TEMPLATE.replace("<!--app-head-->", result.head).replace(
-      "<!--app-html-->",
-      result.html
-    );
-    if (isBot) html = stripHydrationScripts(html);
+    steps.push('cwd=' + process.cwd());
+    steps.push('__dirname=' + (typeof __dirname !== 'undefined' ? __dirname : 'undefined'));
+    // List files at cwd and likely template locations
+    try {
+      const root = fs.readdirSync(process.cwd());
+      steps.push('cwd contents: ' + JSON.stringify(root.slice(0, 30)));
+    } catch (e: any) { steps.push('readdir cwd failed: ' + e.message); }
 
-    res.statusCode = result.status;
-    res.setHeader("content-type", "text/html; charset=utf-8");
-    res.setHeader("vary", "user-agent");
-    res.setHeader("cache-control", "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400");
-    res.end(html);
-  } catch (err) {
-    console.error("SSR error", err);
-    const msg = err instanceof Error ? (err.stack || err.message) : String(err);
+    for (const p of ['dist/server', 'dist/client', './dist/server', '/var/task/dist/server']) {
+      try {
+        const list = fs.readdirSync(p);
+        steps.push(p + ' exists: ' + JSON.stringify(list.slice(0, 20)));
+      } catch (e: any) {
+        steps.push(p + ' missing: ' + e.message);
+      }
+    }
+
+    // Now try the dynamic import
+    let render: any;
+    try {
+      const mod = await import('../dist/server/entry-server.js' as any);
+      render = mod.render;
+      steps.push('imported entry-server.js OK, keys: ' + Object.keys(mod).join(','));
+    } catch (e: any) {
+      steps.push('IMPORT FAILED: ' + (e?.stack || e?.message || String(e)));
+      throw e;
+    }
+
+    // Try the render
+    let result;
+    try {
+      result = render(url);
+      steps.push('render() OK, html=' + result.html.length + ' chars, head=' + result.head.length);
+    } catch (e: any) {
+      steps.push('RENDER FAILED: ' + (e?.stack || e?.message || String(e)));
+      throw e;
+    }
+
+    res.statusCode = 200;
+    res.setHeader('content-type', 'text/html; charset=utf-8');
+    res.end('<pre style="white-space:pre-wrap;font-family:monospace">' + steps.join('\n').replace(/</g, '&lt;') + '\n\n--- RENDERED HEAD ---\n' + result.head.replace(/</g, '&lt;') + '\n\n--- RENDERED HTML (first 2000) ---\n' + result.html.slice(0, 2000).replace(/</g, '&lt;') + '</pre>');
+  } catch (err: any) {
     res.statusCode = 500;
-    res.setHeader("content-type", "text/html; charset=utf-8");
-    res.end(`<!doctype html><html><body><h1>SSR error</h1><pre style="white-space:pre-wrap;color:#c00">${msg.replace(/</g, '&lt;')}</pre></body></html>`);
+    res.setHeader('content-type', 'text/html; charset=utf-8');
+    res.end('<pre style="white-space:pre-wrap;font-family:monospace;color:#c00">DEBUG TRACE\n\n' + steps.join('\n').replace(/</g, '&lt;') + '\n\nFINAL ERROR:\n' + ((err?.stack || err?.message || String(err)).replace(/</g, '&lt;')) + '</pre>');
   }
 }
