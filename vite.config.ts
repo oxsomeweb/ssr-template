@@ -3,14 +3,20 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-// SSR build: `vite build` produces dist/client/index.html + assets,
-// `vite build --ssr src/entry-server.tsx --outDir dist/server` produces
-// the server bundle that api/index.ts imports.
+// SSR build:
+//   vite build              → dist/client/index.html + dist/client/assets/*
+//   vite build --ssr        → dist/server/entry-server.js
+// api/index.ts reads dist/client/index.html as template and imports the
+// SSR bundle to render per-request HTML.
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
     hmr: { overlay: false },
+  },
+  build: {
+    outDir: "dist/client",
+    emptyOutDir: true,
   },
   plugins: [
     react(),
